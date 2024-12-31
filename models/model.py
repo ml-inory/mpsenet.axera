@@ -112,6 +112,16 @@ class PhaseDecoder(nn.Module):
         x = torch.atan2(x_i, x_r)
         x = x.permute(0, 3, 2, 1).squeeze(-1) # [B, F, T]
         return x
+    
+    def forward_export(self, x):
+        x = self.dense_block(x)
+        x = self.phase_conv(x)
+        x_r = self.phase_conv_r(x)
+        x_i = self.phase_conv_i(x)
+        # x = torch.atan2(x_i, x_r)
+        x = x_i / x_r
+        x = x.permute(0, 3, 2, 1).squeeze(-1) # [B, F, T]
+        return x
 
 
 class TSTransformerBlock(nn.Module):

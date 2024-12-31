@@ -86,6 +86,7 @@ def main():
     state_dict = load_checkpoint(ckpt, device)
     model.load_state_dict(state_dict['generator'])
     model.forward = model.forward_export
+    model.phase_decoder.forward = model.phase_decoder.forward_export
     model.eval()
 
     noise_amp = torch.rand(1, h.n_fft // 2 + 1, length)
@@ -94,16 +95,17 @@ def main():
         noise_amp, noise_pha
     )
     input_names = ['noise_mag', 'noise_pha']
-    torch.onnx.export(model,               # model being run
-                    inputs,                    # model input (or a tuple for multiple inputs)
-                    model_name,              # where to save the model (can be a file or file-like object)
-                    export_params=True,        # store the trained parameter weights inside the model file
-                    opset_version=16,          # the ONNX version to export the model to
-                    do_constant_folding=True,  # whether to execute constant folding for optimization
-                    dynamic_axes=None,
-                    input_names = input_names, # the model's input names
-                    output_names = ['denoise_mag', 'denoise_pha'], # the model's output names
-                    )
+    with torch.no_grad():
+        torch.onnx.export(model,               # model being run
+                        inputs,                    # model input (or a tuple for multiple inputs)
+                        model_name,              # where to save the model (can be a file or file-like object)
+                        export_params=True,        # store the trained parameter weights inside the model file
+                        opset_version=16,          # the ONNX version to export the model to
+                        do_constant_folding=True,  # whether to execute constant folding for optimization
+                        dynamic_axes=None,
+                        input_names = input_names, # the model's input names
+                        output_names = ['denoise_mag', 'denoise_pha'], # the model's output names
+                        )
     sim_model,_ = simplify(model_name)
     onnx.save(sim_model, model_name)
     print(f"Export model to {model_name}")

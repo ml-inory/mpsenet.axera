@@ -1,0 +1,8 @@
+torch
+numpy
+onnx
+onnxruntime
+onnxsim
+librosa
+tqdm
+soundfile

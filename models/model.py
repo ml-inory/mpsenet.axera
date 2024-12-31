@@ -119,9 +119,9 @@ class PhaseDecoder(nn.Module):
         x_r = self.phase_conv_r(x)
         x_i = self.phase_conv_i(x)
         # x = torch.atan2(x_i, x_r)
-        x = x_i / x_r
-        x = x.permute(0, 3, 2, 1).squeeze(-1) # [B, F, T]
-        return x
+        # x = x_i / x_r
+        # x = x.permute(0, 3, 2, 1).squeeze(-1) # [B, F, T]
+        return x_i.permute(0, 3, 2, 1).squeeze(-1), x_r.permute(0, 3, 2, 1).squeeze(-1)
 
 
 class TSTransformerBlock(nn.Module):
@@ -179,9 +179,9 @@ class MPNet(nn.Module):
             x = self.TSTransformer[i](x)
         
         denoised_amp = noisy_amp * self.mask_decoder(x)
-        denoised_pha = self.phase_decoder(x)
+        denoised_pha_i, denoised_pha_r = self.phase_decoder(x)
 
-        return denoised_amp, denoised_pha
+        return denoised_amp, denoised_pha_i, denoised_pha_r
 
 
 def phase_losses(phase_r, phase_g):

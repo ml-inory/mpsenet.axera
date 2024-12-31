@@ -104,7 +104,7 @@ def main():
                         do_constant_folding=True,  # whether to execute constant folding for optimization
                         dynamic_axes=None,
                         input_names = input_names, # the model's input names
-                        output_names = ['denoise_mag', 'denoise_pha'], # the model's output names
+                        output_names = ['denoise_mag', 'denoise_pha_i', 'denoise_pha_r'], # the model's output names
                         )
     sim_model,_ = simplify(model_name)
     onnx.save(sim_model, model_name)
@@ -149,9 +149,9 @@ def main():
         tf_mag.add(sub_mag_npy)
         tf_pha.add(sub_pha_npy)
 
-        amp_g, pha_g = sess.run(None, {"noise_mag": sub_mag, "noise_pha": sub_pha})
+        amp_g, pha_g_i, pha_g_r = sess.run(None, {"noise_mag": sub_mag, "noise_pha": sub_pha})
         amp_list.append(amp_g)
-        pha_list.append(pha_g)
+        pha_list.append(np.arctan2(pha_g_i, pha_g_r))
 
     tf_mag.close()
     tf_pha.close()

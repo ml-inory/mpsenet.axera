@@ -1,0 +1,44 @@
+{
+    "model_type": "ONNX",
+    "npu_mode": "NPU1",
+    "quant": {
+      "input_configs": [
+        {
+          "tensor_name": "noise_mag",
+          "calibration_dataset": "./calibration_dataset/noise_mag.tar.gz",
+          "calibration_size": -1,
+          "calibration_format": "Numpy"
+        },
+        {
+          "tensor_name": "noise_pha",
+          "calibration_dataset": "./calibration_dataset/noise_pha.tar.gz",
+          "calibration_size": -1,
+          "calibration_format": "Numpy"
+        }
+      ],
+      
+      "layer_configs": [
+      {
+          "start_tensor_names": ["DEFAULT"], 
+          "end_tensor_names": ["DEFAULT"], 
+          "data_type": "U8"
+        } 
+      ],
+      "precision_analysis": true,
+      "precision_analysis_method":"EndToEnd"
+    },
+    "input_processors": [
+      {
+        "tensor_name": "noise_mag",
+        "src_dtype": "FP32"
+      },
+      {
+        "tensor_name": "noise_pha",
+        "src_dtype": "FP32"
+      }
+    ],
+    "compiler": {
+      "check": 2
+    }
+  }
+  

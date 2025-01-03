@@ -23,9 +23,9 @@
           "end_tensor_names": ["DEFAULT"], 
           "data_type": "U8"
         } 
-      ],
-      "precision_analysis": true,
-      "precision_analysis_method":"EndToEnd"
+      ]
+      // "precision_analysis": true,
+      // "precision_analysis_method":"EndToEnd"
     },
     "input_processors": [
       {

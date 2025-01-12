@@ -23,7 +23,7 @@ def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--input_audio", "-i", type=str, default="noisy_snr0.wav")
     parser.add_argument("--output_audio", "-o", type=str, default="output.wav")
-    parser.add_argument("--length", "-l", type=int, default=1024)
+    parser.add_argument("--length", "-l", type=int, default=128)
     parser.add_argument("--checkpoint", "-c", type=str, default="./best_ckpt/g_best_dns")
     parser.add_argument("--model", "-m", type=str, default="mp-senet.onnx")
     return parser.parse_args()

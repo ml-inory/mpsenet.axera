@@ -6,4 +6,3 @@ onnxsim
 librosa
 tqdm
 soundfile
-pesq

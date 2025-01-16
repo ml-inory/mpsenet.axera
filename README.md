@@ -1,13 +1,16 @@
 # mpsenet.axera
-MP-SENet speech enhancement model on Axera
+MP-SENet speech enhancement model on Axera  
 
-## 环境准备
-```
-conda create -n mpsenet --file requirements.txt
-conda activate mpsenet
-```
+  
+**预编译模型已在本仓库中，如需自行转换请参考以下步骤。**
 
 ## 转换模型
+
+### 环境准备
+```
+conda create -n mpsenet --file requirements_export.txt
+conda activate mpsenet
+```
 
 ### ONNX
 ```
@@ -27,6 +30,9 @@ python run_ort.py -i noisy_snr0.wav
 ```
 
 ### axmodel
+```
+pip3 install -r requirements_ax.txt
+```
 ```
 python3 run_ax.py -i noisy_snr0.wav
 ```

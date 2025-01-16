@@ -103,7 +103,7 @@ def main():
 
     # print(f"audio_g.shape = {audio_g.shape}")
 
-    sf.write(output_audio_file, audio_g, samplerate=sampling_rate, format='PCM_16')
+    sf.write(output_audio_file, audio_g, samplerate=sampling_rate)
     print(f"Save output audio to {output_audio_file}")
 
 

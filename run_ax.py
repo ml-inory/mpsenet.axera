@@ -60,8 +60,8 @@ def main():
     output_audio_file = args.output
 
     # Load model
-    sess = axe.InferenceSession("mp-senet.axmodel")
-    slice_len = sess.get_inputs()[0].shape[-1]
+    sess = axe.InferenceSession.load_from_model("mp-senet.axmodel")
+    slice_len = 128
 
     # from config.json
     sampling_rate = 16000
@@ -91,7 +91,8 @@ def main():
         sub_mag = noisy_mag[..., i * slice_len : (i + 1) * slice_len]
         sub_pha = noisy_pha[..., i * slice_len : (i + 1) * slice_len]
 
-        amp_g, pha_g_i, pha_g_r = sess.run(None, {"noise_mag": sub_mag, "noise_pha": sub_pha})
+        outputs = sess.run({"noise_mag": sub_mag, "noise_pha": sub_pha})
+        amp_g, pha_g_i, pha_g_r = outputs["denoise_mag"], outputs["denoise_pha_i"], outputs["denoise_pha_r"]
         amp_list.append(amp_g)
         pha_list.append(np.arctan2(pha_g_i, pha_g_r))
 

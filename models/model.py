@@ -2,9 +2,18 @@ import torch
 import torch.nn as nn
 import numpy as np
 from models.transformer import TransformerBlock
-from utils import LearnableSigmoid2d
-from pesq import pesq
-from joblib import Parallel, delayed
+
+
+class LearnableSigmoid2d(nn.Module):
+    def __init__(self, in_features, beta=1):
+        super().__init__()
+        self.beta = beta
+        self.slope = nn.Parameter(torch.ones(in_features, 1))
+        self.slope.requiresGrad = True
+
+    def forward(self, x):
+        return self.beta * torch.sigmoid(self.slope * x)
+    
 
 class SPConvTranspose2d(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size, r=1):
@@ -182,37 +191,3 @@ class MPNet(nn.Module):
         denoised_pha_i, denoised_pha_r = self.phase_decoder(x)
 
         return denoised_amp, denoised_pha_i, denoised_pha_r
-
-
-def phase_losses(phase_r, phase_g):
-
-    ip_loss = torch.mean(anti_wrapping_function(phase_r - phase_g))
-    gd_loss = torch.mean(anti_wrapping_function(torch.diff(phase_r, dim=1) - torch.diff(phase_g, dim=1)))
-    iaf_loss = torch.mean(anti_wrapping_function(torch.diff(phase_r, dim=2) - torch.diff(phase_g, dim=2)))
-
-    return ip_loss, gd_loss, iaf_loss
-
-def anti_wrapping_function(x):
-
-    return torch.abs(x - torch.round(x / (2 * np.pi)) * 2 * np.pi)
-
-
-def pesq_score(utts_r, utts_g, h):
-
-    pesq_score = Parallel(n_jobs=30)(delayed(eval_pesq)(
-                            utts_r[i].squeeze().cpu().numpy(),
-                            utts_g[i].squeeze().cpu().numpy(), 
-                            h.sampling_rate)
-                          for i in range(len(utts_r)))
-    pesq_score = np.mean(pesq_score)
-
-    return pesq_score
-
-
-def eval_pesq(clean_utt, esti_utt, sr):
-    try:
-        pesq_score = pesq(sr, clean_utt, esti_utt)
-    except:
-        pesq_score = -1
-
-    return pesq_score

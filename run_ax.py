@@ -6,6 +6,7 @@ import librosa
 import tqdm
 import soundfile as sf
 import axengine as axe
+import time
 
 
 class AttrDict(dict):
@@ -60,7 +61,10 @@ def main():
     output_audio_file = args.output
 
     # Load model
+    start = time.time()
     sess = axe.InferenceSession.load_from_model("mp-senet.axmodel")
+    end = time.time()
+    print(f"Load model take {(end - start) * 1000}ms")
     slice_len = 128
 
     # from config.json
@@ -91,7 +95,11 @@ def main():
         sub_mag = noisy_mag[..., i * slice_len : (i + 1) * slice_len]
         sub_pha = noisy_pha[..., i * slice_len : (i + 1) * slice_len]
 
+        start = time.time()
         outputs = sess.run({"noise_mag": sub_mag, "noise_pha": sub_pha})
+        end = time.time()
+        print(f"Run model take {(end - start) * 1000}ms")
+
         amp_g, pha_g_i, pha_g_r = outputs["denoise_mag"], outputs["denoise_pha_i"], outputs["denoise_pha_r"]
         amp_list.append(amp_g)
         pha_list.append(np.arctan2(pha_g_i, pha_g_r))
@@ -104,7 +112,7 @@ def main():
 
     # print(f"audio_g.shape = {audio_g.shape}")
 
-    sf.write(output_audio_file, audio_g, samplerate=sampling_rate)
+    sf.write(output_audio_file, audio_g, sampling_rate, 'PCM_16')
     print(f"Save output audio to {output_audio_file}")
 
 

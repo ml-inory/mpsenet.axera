@@ -6,6 +6,7 @@ import librosa
 import tqdm
 import soundfile as sf
 import onnxruntime as ort
+import time
 
 
 class AttrDict(dict):
@@ -60,7 +61,10 @@ def main():
     output_audio_file = args.output
 
     # Load model
+    start = time.time()
     sess = ort.InferenceSession("mp-senet.onnx", providers=["CPUExecutionProvider"])
+    end = time.time()
+    print(f"Load model take {(end - start) * 1000}ms")
     slice_len = sess.get_inputs()[0].shape[-1]
 
     # from config.json
@@ -91,7 +95,11 @@ def main():
         sub_mag = noisy_mag[..., i * slice_len : (i + 1) * slice_len]
         sub_pha = noisy_pha[..., i * slice_len : (i + 1) * slice_len]
 
+        start = time.time()
         amp_g, pha_g_i, pha_g_r = sess.run(None, {"noise_mag": sub_mag, "noise_pha": sub_pha})
+        end = time.time()
+        print(f"Run model take {(end - start) * 1000}ms")
+
         amp_list.append(amp_g)
         pha_list.append(np.arctan2(pha_g_i, pha_g_r))
 
@@ -103,7 +111,7 @@ def main():
 
     # print(f"audio_g.shape = {audio_g.shape}")
 
-    sf.write(output_audio_file, audio_g, samplerate=sampling_rate)
+    sf.write(output_audio_file, audio_g, sampling_rate, 'PCM_16')
     print(f"Save output audio to {output_audio_file}")
 
 

@@ -76,6 +76,8 @@ def main():
 
     # Load audio and preprocess
     noisy_wav, _ = librosa.load(input_audio_file, sr=sampling_rate)
+    # 计算音频时长（秒）
+    duration = librosa.get_duration(y=noisy_wav, sr=sampling_rate)
     norm_factor = np.sqrt(noisy_wav.shape[0] / np.sum(noisy_wav ** 2.0))
     noisy_wav = (noisy_wav * norm_factor)[None, ...]
     noisy_mag, noisy_pha = mag_pha_stft(noisy_wav, n_fft, hop_size, win_size, compress_factor)
@@ -91,6 +93,7 @@ def main():
         noisy_mag = np.pad(noisy_mag, pad_size, mode="constant", constant_values=0)
         noisy_pha = np.pad(noisy_pha, pad_size, mode="constant", constant_values=0)
 
+    process_time = 0.0
     for i in tqdm.trange(slice_num):
         sub_mag = noisy_mag[..., i * slice_len : (i + 1) * slice_len]
         sub_pha = noisy_pha[..., i * slice_len : (i + 1) * slice_len]
@@ -98,7 +101,7 @@ def main():
         start = time.time()
         amp_g, pha_g_i, pha_g_r = sess.run(None, {"noise_mag": sub_mag, "noise_pha": sub_pha})
         end = time.time()
-        print(f"Run model take {(end - start) * 1000}ms")
+        process_time += end - start
 
         amp_list.append(amp_g)
         pha_list.append(np.arctan2(pha_g_i, pha_g_r))
@@ -113,6 +116,9 @@ def main():
 
     sf.write(output_audio_file, audio_g, sampling_rate, 'PCM_16')
     print(f"Save output audio to {output_audio_file}")
+
+    print(f"Average inference time: {process_time * 1000 / slice_num}ms")
+    print(f"RTF: {process_time / duration}")
 
 
 if __name__ == "__main__":

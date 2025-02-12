@@ -3,6 +3,6 @@ numpy
 onnx
 onnxruntime
 onnxsim
-librosa
+librosa==0.10.2.post1
 tqdm
 soundfile
